@@ -1,0 +1,5 @@
+/vendor
+/docker-data
+/logs
+/composer.lock
+/bitrix
