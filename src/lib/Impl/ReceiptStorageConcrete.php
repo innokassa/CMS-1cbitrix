@@ -1,5 +1,7 @@
 <?php
 
+namespace Innokassa\Fiscal\Impl;
+
 use Innokassa\MDK\Entities\Receipt;
 use Innokassa\MDK\Storage\ReceiptFilter;
 use Innokassa\MDK\Entities\ConverterAbstract;
@@ -9,7 +11,7 @@ use Innokassa\MDK\Storage\ReceiptStorageInterface;
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class ReceiptStorageConcrete implements ReceiptStorageInterface
 {
-    public function __construct(CDatabase $db, ConverterAbstract $converter)
+    public function __construct(\CDatabase $db, ConverterAbstract $converter)
     {
         $this->db = $db;
         $this->converter = $converter;

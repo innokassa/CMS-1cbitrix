@@ -1,10 +1,17 @@
 <?php
 
-use Innokassa\MDK\Settings\SettingsAbstract;
+namespace Innokassa\Fiscal\Impl;
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
-abstract class SettingsPreAbstract extends SettingsAbstract
+use Innokassa\MDK\Settings\SettingsAbstract;
+use Innokassa\MDK\Exceptions\SettingsException;
+
+class SettingsConcrete extends SettingsAbstract
 {
+    public function __construct(array $settings)
+    {
+        $this->settings = $settings;
+    }
+
     public function getActorId(string $siteId = ''): string
     {
         return $this->get('actor_id', $siteId);
@@ -59,4 +66,27 @@ abstract class SettingsPreAbstract extends SettingsAbstract
     {
         return $this->get('order_status_receipt_full', $siteId);
     }
+
+    //######################################################################
+
+    public function get(string $name, string $siteId = '')
+    {
+        if ($siteId) {
+            if (isset($this->settings[$siteId][$name])) {
+                return $this->settings[$siteId][$name];
+            }
+        } else {
+            if (isset($this->settings[$name])) {
+                return $this->settings[$name];
+            }
+        }
+
+        throw new SettingsException("Настройка '$name' не инициализирована");
+    }
+
+    //######################################################################
+    // PRIVATE
+    //######################################################################
+
+    private $settings = [];
 }

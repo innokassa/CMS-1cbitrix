@@ -1,12 +1,15 @@
 <?php
 
+namespace Innokassa\Fiscal;
+
+use Innokassa\Fiscal\Impl\ClientFactory;
 use Innokassa\MDK\Settings\SettingsAbstract;
 use Innokassa\MDK\Entities\Atoms\ReceiptSubType;
 
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class Events
 {
-    public static function onSaleOrderBeforeSaved(Bitrix\Main\Event $oEvent)
+    public static function onSaleOrderBeforeSaved(\Bitrix\Main\Event $oEvent)
     {
         $mdk = ClientFactory::build();
         $settings = $mdk->componentSettings();
@@ -48,7 +51,7 @@ class Events
             } elseif ($settings->getOrderStatusReceiptFull($siteId) == $orderFields["STATUS_ID"]) {
                 $automatic->fiscalize($order->getId(), $siteId, ReceiptSubType::FULL);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
     }
 

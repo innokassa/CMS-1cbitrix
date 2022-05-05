@@ -1,5 +1,9 @@
 <?php
 
+namespace Innokassa\Fiscal\Impl;
+
+use Bitrix\Main\SiteTable;
+use Bitrix\Main\Config\Option;
 use Innokassa\MDK\Client;
 use Innokassa\MDK\Net\Transfer;
 use Innokassa\MDK\Net\ConverterApi;
@@ -16,7 +20,13 @@ class ClientFactory
 {
     public static function build(): Client
     {
-        $settings = new SettingsOptions();
+        $dbRes = SiteTable::getList();
+        $options = [];
+        while ($site = $dbRes->fetch()) {
+            $options[$site['LID']] = Option::getForModule('innokassa.fiscal', $site['LID']);
+        }
+
+        $settings = new SettingsConcrete($options);
         $receiptStorage = new ReceiptStorageConcrete(
             $GLOBALS['DB'],
             new ConverterStorage(new ReceiptIdFactoryMeta())

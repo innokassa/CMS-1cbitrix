@@ -1,7 +1,5 @@
 <?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 
-include(dirname(dirname(__FILE__)) . '/config.php');
-
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 class innokassa_fiscal extends CModule
@@ -34,17 +32,17 @@ class innokassa_fiscal extends CModule
 
     public function doInstall()
     {
-        global $DB, $APPLICATION, $step;
+        global $APPLICATION;
 
         if (!in_array('curl', get_loaded_extensions())) {
             $APPLICATION->ThrowException('Для работы модуля необходимо наличие curl');
             return false;
         }
 
-        $this->InstallDB();
-        $this->InstallEvents();
-        $this->InstallAgents();
-        $this->InstallFiles();
+        $this->installDB();
+        $this->installEvents();
+        $this->installAgents();
+        $this->installFiles();
 
         RegisterModule($this->MODULE_ID);
 
@@ -63,32 +61,30 @@ class innokassa_fiscal extends CModule
 
     public function installEvents()
     {
-        $oEventManager = \Bitrix\Main\EventManager::getInstance();
+        $eventManager = \Bitrix\Main\EventManager::getInstance();
 
-        $oEventManager->registerEventHandler(
+        $eventManager->registerEventHandler(
             'main',
             'OnAdminContextMenuShow',
             $this->MODULE_ID,
-            'Events',
+            '\Innokassa\Fiscal\Events',
             'onAdminContextMenuShow'
         );
 
-        $oEventManager->registerEventHandler(
+        $eventManager->registerEventHandler(
             'sale',
             'OnSaleOrderBeforeSaved',
             $this->MODULE_ID,
-            'Events',
+            '\Innokassa\Fiscal\Events',
             'onSaleOrderBeforeSaved'
         );
-
-        return false;
     }
 
     //************************************************************************
 
     public function installAgents()
     {
-        CAgent::AddAgent("AgentFiscal();", $this->MODULE_ID, "N", 600, "", "Y");
+        CAgent::AddAgent("\Innokassa\Fiscal\AgentFiscal::pipeline()();", $this->MODULE_ID, "N", 600, "", "Y");
     }
 
     //************************************************************************
@@ -128,11 +124,10 @@ class innokassa_fiscal extends CModule
 
     public function doUninstall()
     {
-        global $DOCUMENT_ROOT, $APPLICATION;
-        $this->UnInstallEvents();
-        $this->UnInstallAgents();
-        $this->UnInstallDB();
-        $this->UnInstallFiles();
+        $this->uninstallEvents();
+        $this->uninstallAgents();
+        $this->uninstallDB();
+        $this->uninstallFiles();
 
         UnRegisterModule($this->MODULE_ID);
     }
@@ -147,25 +142,23 @@ class innokassa_fiscal extends CModule
 
     public function uninstallEvents()
     {
-        $oEventManager = \Bitrix\Main\EventManager::getInstance();
+        $eventManager = \Bitrix\Main\EventManager::getInstance();
 
-        $oEventManager->unRegisterEventHandler(
+        $eventManager->unRegisterEventHandler(
             'main',
             'OnAdminContextMenuShow',
             $this->MODULE_ID,
-            'events',
-            'OnAdminContextMenuShow'
+            '\Innokassa\Fiscal\Events',
+            'onAdminContextMenuShow'
         );
 
-        $oEventManager->unRegisterEventHandler(
+        $eventManager->unRegisterEventHandler(
             'sale',
             'OnSaleOrderBeforeSaved',
             $this->MODULE_ID,
-            'events',
-            'OnSaleOrderBeforeSaved'
+            '\Innokassa\Fiscal\Events',
+            'onSaleOrderBeforeSaved'
         );
-
-        return false;
     }
 
     //************************************************************************
@@ -192,5 +185,6 @@ class innokassa_fiscal extends CModule
     // PRIVATE
     //######################################################################
 
+    /** @var string */
     private static $table = 'innokassa_fiscal';
 }

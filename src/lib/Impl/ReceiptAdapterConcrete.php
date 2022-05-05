@@ -1,5 +1,7 @@
 <?php
 
+namespace Innokassa\Fiscal\Impl;
+
 use Innokassa\MDK\Entities\Atoms\Vat;
 use Innokassa\MDK\Entities\Atoms\Unit;
 use Innokassa\MDK\Entities\ReceiptItem;
@@ -11,6 +13,7 @@ use Innokassa\MDK\Entities\Atoms\ReceiptSubType;
 use Innokassa\MDK\Entities\Atoms\ReceiptItemType;
 use Innokassa\MDK\Entities\ReceiptAdapterInterface;
 use Innokassa\MDK\Collections\ReceiptItemCollection;
+use Innokassa\MDK\Exceptions\Base\InvalidArgumentException;
 
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class ReceiptAdapterConcrete implements ReceiptAdapterInterface

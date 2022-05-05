@@ -3,10 +3,17 @@
 use Bitrix\Main\Loader;
 use Bitrix\Main\SiteTable;
 use Bitrix\Main\Config\Option;
+use Innokassa\MDK\Net\Transfer;
 use Bitrix\Main\HttpApplication;
-use Innokassa\MDK\Entities\Atoms\ReceiptItemType;
+use Innokassa\MDK\Net\ConverterApi;
+use Innokassa\MDK\Logger\LoggerFile;
+use Innokassa\MDK\Net\NetClientCurl;
 use Innokassa\MDK\Entities\Atoms\Vat;
+use Innokassa\MDK\Services\ConnectorBase;
+use Innokassa\Fiscal\Impl\SettingsConcrete;
 use Innokassa\MDK\Settings\SettingsAbstract;
+use Innokassa\MDK\Exceptions\SettingsException;
+use Innokassa\MDK\Entities\Atoms\ReceiptItemType;
 
 //##########################################################################
 
@@ -15,6 +22,13 @@ $request = HttpApplication::getInstance()->getContext()->getRequest();
 $idModule = htmlspecialcharsbx($request["mid"] != "" ? $request["mid"] : $request["id"]);
 Loader::includeModule($idModule);
 Loader::includeModule("sale");
+
+$dbRes = SiteTable::getList();
+$options = [];
+while ($site = $dbRes->fetch()) {
+    $options[$site['LID']] = Option::getForModule('innokassa.fiscal', $site['LID']);
+}
+$settings = new SettingsConcrete($options);
 
 //##########################################################################
 
@@ -316,14 +330,14 @@ if ($request->isPost() && check_bitrix_sessid()) {
         //проверка настроек
 
         try {
-            $transfer = new Innokassa\MDK\Net\Transfer(
-                new Innokassa\MDK\Net\NetClientCurl(),
-                new Innokassa\MDK\Net\ConverterApi(),
-                new Innokassa\MDK\Logger\LoggerFile()
+            $transfer = new Transfer(
+                new NetClientCurl(),
+                new ConverterApi(),
+                new LoggerFile()
             );
-            $conn = new Innokassa\MDK\Services\ConnectorBase($transfer);
-            $conn->testSettings(new SettingsRaw($aOptions), $sSiteId);
-        } catch (Innokassa\MDK\Exceptions\SettingsException $e) {
+            $conn = new ConnectorBase($transfer);
+            $conn->testSettings(new SettingsConcrete($aOptions), $sSiteId);
+        } catch (SettingsException $e) {
             $aSettingsError[$sSiteId][] = $e->getMessage();
             $existsError = true;
         }
