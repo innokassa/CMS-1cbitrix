@@ -8,8 +8,6 @@ use Innokassa\MDK\Entities\Atoms\ReceiptItemType;
 use Innokassa\MDK\Entities\Atoms\Vat;
 use Innokassa\MDK\Settings\SettingsAbstract;
 
-//require_once("include.php");
-
 //##########################################################################
 
 $request = HttpApplication::getInstance()->getContext()->getRequest();

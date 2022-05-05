@@ -57,10 +57,6 @@ class innokassa_fiscal extends CModule
 
     public function installFiles()
     {
-        /*CopyDirFiles(
-            $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$this->MODULE_ID."/install/static/js",
-            $_SERVER["DOCUMENT_ROOT"]."/bitrix/js/".STATIC_DIR_NAME, true, true
-        );*/
     }
 
     //************************************************************************
@@ -145,7 +141,6 @@ class innokassa_fiscal extends CModule
 
     public function uninstallFiles()
     {
-        //DeleteDirFilesEx("/bitrix/js/".STATIC_DIR_NAME);
     }
 
     //************************************************************************
@@ -185,10 +180,10 @@ class innokassa_fiscal extends CModule
     public function uninstallDB()
     {
         global $DB;
-        $sql = sprintf('DROP TABLE `%s', self::$table);
+        $sql = sprintf('DROP TABLE `%s`', self::$table);
         $DB->Query(
             $sql,
-            true,
+            false,
             sprintf('Module %s, DB error(%s:%s)', $this->MODULE_ID, __FILE__, __LINE__)
         );
     }
