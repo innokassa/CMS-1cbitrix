@@ -5,6 +5,7 @@ namespace Innokassa\Fiscal;
 use Innokassa\Fiscal\Impl\ClientFactory;
 use Innokassa\MDK\Settings\SettingsAbstract;
 use Innokassa\MDK\Entities\Atoms\ReceiptSubType;
+use Innokassa\MDK\Exceptions\Services\AutomaticException;
 
 /**
  * Статический класс обработчиков событий
@@ -25,6 +26,7 @@ class Events
         $settings = $mdk->componentSettings();
         $automatic = $mdk->serviceAutomatic();
 
+        /** @var \Bitrix\Sale\Order */
         $order = $oEvent->getParameter("ENTITY");
         $orderFields = $order->getFieldValues();
         $siteId = $order->getSiteId();
@@ -39,6 +41,11 @@ class Events
             return;
         }
 
+        // если заказ не оплачен - завершаем
+        if (!$order->isPaid()) {
+            return;
+        }
+
         // проверяем все ли системы оплаты соответсвуют тому что выбрано в модуле
         foreach ($order->getPaymentCollection() as $payment) {
             $paymentFields = $payment->getFieldValues();
@@ -48,6 +55,7 @@ class Events
                 || $settings->get("paysystem", $siteId) == $paymentFields["PAY_SYSTEM_ID"]
             );
 
+            // если была оплата по неподходящему способу - пропускаем
             if ($paymentFields["PAID"] == "Y" && !$isCorrectPaySystem) {
                 return;
             }
@@ -62,7 +70,7 @@ class Events
             } elseif ($settings->getOrderStatusReceiptFull($siteId) == $orderFields["STATUS_ID"]) {
                 $automatic->fiscalize($order->getId(), $siteId, ReceiptSubType::FULL);
             }
-        } catch (\Exception $e) {
+        } catch (AutomaticException $e) {
         }
     }
 
