@@ -13,7 +13,6 @@ use Innokassa\MDK\Services\PipelineBase;
 use Innokassa\MDK\Services\AutomaticBase;
 use Innokassa\MDK\Services\ConnectorBase;
 use Innokassa\MDK\Storage\ConverterStorage;
-use Innokassa\MDK\Entities\ReceiptId\ReceiptIdFactoryMeta;
 
 /**
  * Фабрика клиента MDK
@@ -28,10 +27,12 @@ class ClientFactory
             $options[$site['LID']] = Option::getForModule('innokassa.fiscal', $site['LID']);
         }
 
+        $receiptIdFactory = new ReceiptIdFactoryMetaConcrete();
+
         $settings = new SettingsConcrete($options);
         $receiptStorage = new ReceiptStorageConcrete(
             $GLOBALS['DB'],
-            new ConverterStorage(new ReceiptIdFactoryMeta())
+            new ConverterStorage($receiptIdFactory)
         );
         $receiptAdapter = new ReceiptAdapterConcrete($settings);
         $logger = new LoggerFile();
@@ -46,7 +47,7 @@ class ClientFactory
             $receiptStorage,
             $transfer,
             $receiptAdapter,
-            new ReceiptIdFactoryMeta()
+            $receiptIdFactory
         );
         $pipeline = new PipelineBase($settings, $receiptStorage, $transfer);
         $connector = new ConnectorBase($transfer);
