@@ -2,6 +2,7 @@
 
 namespace Innokassa\Fiscal\Impl;
 
+use Bitrix\Sale\Order;
 use Innokassa\MDK\Entities\Atoms\Vat;
 use Innokassa\MDK\Entities\Atoms\Unit;
 use Innokassa\MDK\Entities\ReceiptItem;
@@ -15,9 +16,14 @@ use Innokassa\MDK\Entities\ReceiptAdapterInterface;
 use Innokassa\MDK\Collections\ReceiptItemCollection;
 use Innokassa\MDK\Exceptions\Base\InvalidArgumentException;
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+/**
+ * Реализация адаптера чеков
+ */
 class ReceiptAdapterConcrete implements ReceiptAdapterInterface
 {
+    /**
+     * @param SettingsAbstract $settings
+     */
     public function __construct(SettingsAbstract $settings)
     {
         $this->settings = $settings;
@@ -41,32 +47,13 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
                 throw new InvalidArgumentException("invalid subType '$subType'");
         }
 
-        $order = \Bitrix\Sale\Order::load(intval($orderId));
+        $order = $this->getOrder($orderId);
 
         $basketItems = $order->getBasket()->getBasketItems();
         $items = new ReceiptItemCollection();
 
         foreach ($basketItems as $basketItem) {
             $itemFields = $basketItem->getFieldValues();
-
-            $productVat = \Bitrix\Catalog\ProductTable::getList(
-                [
-                    'filter' => [
-                        'ID' => $itemFields['PRODUCT_ID']
-                    ],
-                    'select' => ['VAT_ID'],
-                ]
-            )->fetch();
-
-            $vatRate = '';
-            if ($productVat['VAT_ID'] != 0) {
-                $vatRate = intval($itemFields["VAT_RATE"]);
-                if ($vatRate > 0 && $subType == ReceiptSubType::PRE) {
-                    $vatRate = "$vatRate/1$vatRate";
-                }
-            } else {
-                $vatRate = $this->settings->getVatDefaultItems($siteId);
-            }
 
             $item = (new ReceiptItem())
                 ->setItemId($itemFields['PRODUCT_ID'])
@@ -80,13 +67,21 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
                     : $this->settings->getTypeDefaultItems($siteId)
                 )
                 ->setUnit(Unit::DEFAULT)
-                ->setVat(new Vat($vatRate));
+                ->setVat(
+                    $this->getVatProduct(
+                        $itemFields['PRODUCT_ID'],
+                        $itemFields['VAT_RATE'],
+                        $subType,
+                        $siteId
+                    )
+                );
 
             $items[] = $item;
         }
 
         $deliveryPrice = $order->getDeliveryPrice();
         if ($deliveryPrice > 0) {
+            $vatShipping = $this->getVatShipping($subType, $siteId);
             $item = (new ReceiptItem())
                 ->setName('Доставка')
                 ->setPrice($deliveryPrice)
@@ -98,7 +93,7 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
                     ? ReceiptItemType::PAYMENT
                     : ReceiptItemType::SERVICE
                 )
-                ->setVat(new Vat($this->settings->getVatShipping($siteId)));
+                ->setVat($vatShipping);
 
             $items[] = $item;
         }
@@ -111,7 +106,7 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
      */
     public function getTotal(string $orderId, string $siteId): float
     {
-        $order = \Bitrix\Sale\Order::load(intval($orderId));
+        $order = $this->getOrder($orderId);
         return $order->getPrice();
     }
 
@@ -120,7 +115,7 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
      */
     public function getCustomer(string $orderId, string $siteId): ?Customer
     {
-        $order = \Bitrix\Sale\Order::load(intval($orderId));
+        $order = $this->getOrder($orderId);
         $orderProps = $order->getPropertyCollection()->getArray();
 
         $customer = null;
@@ -141,7 +136,7 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
      */
     public function getNotify(string $orderId, string $siteId): Notify
     {
-        $order = \Bitrix\Sale\Order::load(intval($orderId));
+        $order = $this->getOrder($orderId);
         $orderProps = $order->getPropertyCollection()->getArray();
 
         $notify = new Notify();
@@ -155,5 +150,86 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
         }
 
         return $notify;
+    }
+
+    //######################################################################
+    // PRIVATE
+    //######################################################################
+
+    /** @var Order */
+    private $order = null;
+
+    //######################################################################
+
+    /**
+     * Получить заказ
+     *
+     * @param string $orderId
+     * @return Order
+     */
+    private function getOrder(string $orderId): Order
+    {
+        if ($this->order && $this->order->getId() == $orderId) {
+            return $this->order;
+        }
+
+        $this->order = Order::load(intval($orderId));
+
+        return $this->order;
+    }
+
+    /**
+     * Получить НДС на продукцию
+     *
+     * @param string $productId
+     * @param string $vatRate
+     * @param integer $subType
+     * @param string $siteId
+     * @return Vat
+     */
+    private function getVatProduct(string $productId, string $vatRate, int $subType, string $siteId): Vat
+    {
+        $productVat = \Bitrix\Catalog\ProductTable::getList(
+            [
+                'filter' => [
+                    'ID' => $productId
+                ],
+                'select' => ['VAT_ID'],
+            ]
+        )->fetch();
+
+        $vatRate = '';
+        if ($productVat['VAT_ID'] != 0) {
+            $vatRate = intval($vatRate);
+        } else {
+            $vatRate = (new Vat($this->settings->getVatDefaultItems($siteId)))->getName();
+        }
+
+        if ($vatRate > 0 && $subType == ReceiptSubType::PRE) {
+            $vatRate = "$vatRate/1$vatRate";
+        }
+
+        $vat = new Vat($vatRate);
+
+        return $vat;
+    }
+
+    /**
+     * Получить НДС на доставку
+     *
+     * @param integer $subType
+     * @param string $siteId
+     * @return Vat
+     */
+    private function getVatShipping(int $subType, string $siteId): Vat
+    {
+        $vat = new Vat($this->settings->getVatShipping($siteId));
+
+        if (($vatRate = $vat->getName()) > 0 && $subType == ReceiptSubType::PRE) {
+            $vatRate = "$vatRate/1$vatRate";
+            $vat = new Vat($vatRate);
+        }
+
+        return $vat;
     }
 }
