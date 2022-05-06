@@ -8,9 +8,15 @@ use Innokassa\MDK\Entities\ConverterAbstract;
 use Innokassa\MDK\Collections\ReceiptCollection;
 use Innokassa\MDK\Storage\ReceiptStorageInterface;
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+/**
+ * Реализация хранилища чеков
+ */
 class ReceiptStorageConcrete implements ReceiptStorageInterface
 {
+    /**
+     * @param \CDatabase $db
+     * @param ConverterAbstract $converter
+     */
     public function __construct(\CDatabase $db, ConverterAbstract $converter)
     {
         $this->db = $db;
@@ -32,7 +38,8 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
                 self::$table,
                 $a,
                 sprintf('WHERE `id`=%d', $receipt->getId()),
-                sprintf('DB error (%s:%s)', __FILE__, __LINE__)
+                sprintf('DB error (%s:%s)', __FILE__, __LINE__),
+                false
             );
 
             return $receipt->getId();
@@ -42,7 +49,7 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
             self::$table,
             $a,
             sprintf('DB error (%s:%s)', __FILE__, __LINE__),
-            true
+            false
         );
 
         $id = $this->db->LastID();
@@ -118,7 +125,7 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
     // PRIVATE
     //######################################################################
 
-    /** @var CDatabase */
+    /** @var \CDatabase */
     private $db = null;
 
     /** @var ConverterAbstract */
@@ -129,6 +136,12 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
 
     //######################################################################
 
+    /**
+     * Обработка массива данных для передачи в SQL запрос
+     *
+     * @param array $a
+     * @return array
+     */
     protected function escapeArr(array $a): array
     {
         foreach ($a as $key => $value) {

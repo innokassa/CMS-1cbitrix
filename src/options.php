@@ -1,10 +1,18 @@
 <?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 
+/**
+ * для потомков:
+ * этот код плохой, я знаю, он был на скорую руку перенесен из прошлой версии,
+ * задача стояла сделать быстро, пока нет мыслей как быстро это причесать ...
+ * поэтому оставлю как есть ...
+ * код плохой, но рабочий
+ */
+
 use Bitrix\Main\Loader;
 use Bitrix\Main\SiteTable;
 use Bitrix\Main\Config\Option;
-use Innokassa\MDK\Net\Transfer;
 use Bitrix\Main\HttpApplication;
+use Innokassa\MDK\Net\Transfer;
 use Innokassa\MDK\Net\ConverterApi;
 use Innokassa\MDK\Logger\LoggerFile;
 use Innokassa\MDK\Net\NetClientCurl;
@@ -22,13 +30,6 @@ $request = HttpApplication::getInstance()->getContext()->getRequest();
 $idModule = htmlspecialcharsbx($request["mid"] != "" ? $request["mid"] : $request["id"]);
 Loader::includeModule($idModule);
 Loader::includeModule("sale");
-
-$dbRes = SiteTable::getList();
-$options = [];
-while ($site = $dbRes->fetch()) {
-    $options[$site['LID']] = Option::getForModule('innokassa.fiscal', $site['LID']);
-}
-$settings = new SettingsConcrete($options);
 
 //##########################################################################
 

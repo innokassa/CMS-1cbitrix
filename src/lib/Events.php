@@ -6,9 +6,19 @@ use Innokassa\Fiscal\Impl\ClientFactory;
 use Innokassa\MDK\Settings\SettingsAbstract;
 use Innokassa\MDK\Entities\Atoms\ReceiptSubType;
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+/**
+ * Статический класс обработчиков событий
+ */
 class Events
 {
+    /**
+     * Обработчик события 'перед сохранением заказа'
+     *
+     * @link https://dev.1c-bitrix.ru/api_d7/bitrix/sale/events/order_saved.php
+     *
+     * @param \Bitrix\Main\Event $oEvent
+     * @return void
+     */
     public static function onSaleOrderBeforeSaved(\Bitrix\Main\Event $oEvent)
     {
         $mdk = ClientFactory::build();
@@ -19,6 +29,7 @@ class Events
         $orderFields = $order->getFieldValues();
         $siteId = $order->getSiteId();
 
+        // если заказ внешний, а нужна обработка только внутренних заказов - завершаем
         if (
             !(
                 !$order->isExternal()
@@ -57,7 +68,15 @@ class Events
 
     //########################################################################
 
-    public static function onAdminContextMenuShow(&$aItems)
+    /**
+     * Обработчик события рендера админ меню
+     *
+     * @link https://dev.1c-bitrix.ru/api_help/main/events/onadmincontextmenushow.php
+     *
+     * @param array &$aItems
+     * @return void
+     */
+    public static function onAdminContextMenuShow(array &$aItems)
     {
         if (
             $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php'

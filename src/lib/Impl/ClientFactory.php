@@ -15,7 +15,9 @@ use Innokassa\MDK\Services\ConnectorBase;
 use Innokassa\MDK\Storage\ConverterStorage;
 use Innokassa\MDK\Entities\ReceiptId\ReceiptIdFactoryMeta;
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+/**
+ * Фабрика клиента MDK
+ */
 class ClientFactory
 {
     public static function build(): Client
