@@ -188,7 +188,7 @@ foreach (ReceiptItemType::all() as $temType) {
 $aTabs = [
     [
         "DIV"    => "edit-acc-fermarunet",
-        "TAB"    => "Настройки кассы FERMA.ru.net",
+        "TAB"    => "Настройки облачной кассы",
         "OPTIONS" => [
             ["cashbox", "ID группы касс:", "", ["text", 20]],
             ["actor_id", "Актор id:", "", ["text", 20]],
@@ -234,7 +234,7 @@ $aTabs = [
                 ]
             ],
             [
-                "vat_default_items",
+                "vat_shipping",
                 "НДС доставки:",
                 array_keys($vats)[0],
                 [
