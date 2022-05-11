@@ -84,7 +84,7 @@ class innokassa_fiscal extends CModule
 
     public function installAgents()
     {
-        CAgent::AddAgent("\Innokassa\Fiscal\AgentFiscal::pipeline()();", $this->MODULE_ID, "N", 600, "", "Y");
+        CAgent::AddAgent("\Innokassa\Fiscal\AgentFiscal::pipeline();", $this->MODULE_ID, "N", 600, "", "Y");
     }
 
     //************************************************************************
