@@ -18,6 +18,7 @@ use Innokassa\MDK\Logger\LoggerFile;
 use Innokassa\MDK\Net\NetClientCurl;
 use Innokassa\MDK\Entities\Atoms\Vat;
 use Innokassa\MDK\Services\ConnectorBase;
+use Innokassa\MDK\Entities\Atoms\Taxation;
 use Innokassa\Fiscal\Impl\SettingsConcrete;
 use Innokassa\MDK\Settings\SettingsAbstract;
 use Innokassa\MDK\Exceptions\SettingsException;
@@ -171,8 +172,15 @@ $schemes = [
     SettingsAbstract::SCHEME_ONLY_FULL => 'Полный расчет'
 ];
 
+$taxations = [];
+foreach (Taxation::all() as $taxation) {
+    $taxations[$taxation->getCode()] = $taxation->getName();
+}
+
+$vatsAllow = [Vat::CODE_WITHOUT, Vat::CODE_0, Vat::CODE_20, Vat::CODE_10];
 $vats = [];
-foreach (Vat::all() as $vat) {
+foreach ($vatsAllow as $vatCode) {
+    $vat = new Vat($vatCode);
     $vats[$vat->getCode()] = $vat->getName();
 }
 
@@ -190,23 +198,16 @@ $aTabs = [
         "DIV"    => "edit-acc-fermarunet",
         "TAB"    => "Настройки облачной кассы",
         "OPTIONS" => [
-            ["cashbox", "ID группы касс:", "", ["text", 20]],
+            ["cashbox", "Группа касс:", "", ["text", 20]],
             ["actor_id", "Актор id:", "", ["text", 20]],
             ["actor_token", "Токен актора:", "", ["text", 20]],
             [
                 "taxation",
                 "Налогообложение:",
-                "0",
+                array_keys($taxations)[0],
                 [
                     "selectbox",
-                    [
-                        0 => "Не выбрано",
-                        1 => "ОРН",
-                        2 => "УСН доход",
-                        4 => "УСН доход - расход",
-                        16 => "ЕСН",
-                        32 => "ПСН"
-                    ]
+                    $taxations
                 ]
             ],
             [
