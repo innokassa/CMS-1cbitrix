@@ -121,9 +121,9 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
         $customer = null;
 
         foreach ($orderProps['properties'] as $prop) {
-            if ($prop['IS_PROFILE_NAME'] == 'Y') {
+            if ($prop['IS_PROFILE_NAME'] == 'Y' && ($name = array_shift($prop['VALUE']))) {
                 $customer = new Customer();
-                $customer->setName(array_shift($prop['VALUE']));
+                $customer->setName($name);
                 break;
             }
         }
@@ -198,18 +198,21 @@ class ReceiptAdapterConcrete implements ReceiptAdapterInterface
             ]
         )->fetch();
 
-        $vatRate = '';
+        $vat = null;
         if ($productVat['VAT_ID'] != 0) {
-            $vatRate = intval($vatRate);
+            $vat = new Vat(intval($vatRate));
         } else {
-            $vatRate = (new Vat($this->settings->getVatDefaultItems($siteId)))->getName();
+            $vat = (new Vat($this->settings->getVatDefaultItems($siteId)));
         }
 
-        if ($vatRate > 0 && $subType == ReceiptSubType::PRE) {
+        if (
+            !($vat->getCode() == Vat::CODE_WITHOUT || $vat->getCode() == Vat::CODE_0)
+            && $subType == ReceiptSubType::PRE
+        ) {
+            $vatRate = $vat->getName();
             $vatRate = "$vatRate/1$vatRate";
+            $vat = new Vat($vatRate);
         }
-
-        $vat = new Vat($vatRate);
 
         return $vat;
     }
