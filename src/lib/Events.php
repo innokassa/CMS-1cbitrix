@@ -2,6 +2,8 @@
 
 namespace Innokassa\Fiscal;
 
+use Bitrix\Main\EventResult;
+use Bitrix\Sale\ResultError;
 use Innokassa\Fiscal\Impl\ClientFactory;
 use Innokassa\MDK\Settings\SettingsAbstract;
 use Innokassa\MDK\Entities\Atoms\ReceiptSubType;
@@ -71,6 +73,14 @@ class Events
                 $automatic->fiscalize($order->getId(), $siteId, ReceiptSubType::FULL);
             }
         } catch (AutomaticException $e) {
+        } catch (\Exception $e) {
+            $oEvent->addResult(
+                new EventResult(
+                    EventResult::ERROR,
+                    new ResultError(sprintf('Не удалось фискализировать заказ - %s', $e->getMessage())),
+                    'innokassa.fiscal'
+                )
+            );
         }
     }
 
