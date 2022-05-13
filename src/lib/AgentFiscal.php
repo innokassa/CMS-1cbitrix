@@ -20,8 +20,7 @@ class AgentFiscal
     {
         $mdk = ClientFactory::build();
         $pipeline = $mdk->servicePipeline();
-        $pipeline->updateUnaccepted();
-        $pipeline->updateAccepted();
+        $pipeline->update();
 
         return sprintf('%s::pipeline();', AgentFiscal::class);
     }

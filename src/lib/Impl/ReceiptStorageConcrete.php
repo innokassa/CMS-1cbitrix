@@ -87,6 +87,14 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
             $val = $value['value'];
             if ($val === null) {
                 $val = 'null';
+            } elseif (is_array($val)) {
+                $val = '(' . implode(',', $val) . ')';
+
+                if ($value['op'] == '=') {
+                    $value['op'] = ' IN ';
+                } else {
+                    $value['op'] = ' NOT IN ';
+                }
             } else {
                 $val = "'$val'";
             }
@@ -98,7 +106,7 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
 
         $res = $this->db->Query(
             sprintf(
-                'SELECT * FROM `%s` WHERE %s %s',
+                'SELECT * FROM `%s` WHERE %s ORDER BY `id` ASC %s',
                 self::$table,
                 $where,
                 ($limit > 0 ? "LIMIT $limit" : '')

@@ -109,6 +109,7 @@ class innokassa_fiscal extends CModule
             `customer` TEXT NOT NULL,
             `notify` TEXT NOT NULL,
             `location` VARCHAR(255) NOT NULL,
+            `start_time` VARCHAR(32) NOT NULL,
             PRIMARY KEY (`id`),
             INDEX `filter` (`order_id`, `type`, `subtype`, `status`)
         ) ENGINE = InnoDB;";
@@ -172,13 +173,13 @@ class innokassa_fiscal extends CModule
 
     public function uninstallDB()
     {
-        global $DB;
+        /*global $DB;
         $sql = sprintf('DROP TABLE `%s`', self::$table);
         $DB->Query(
             $sql,
             false,
             sprintf('Module %s, DB error(%s:%s)', $this->MODULE_ID, __FILE__, __LINE__)
-        );
+        );*/
     }
 
     //######################################################################
