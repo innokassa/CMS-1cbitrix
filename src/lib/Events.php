@@ -19,17 +19,23 @@ class Events
      *
      * @link https://dev.1c-bitrix.ru/api_d7/bitrix/sale/events/order_saved.php
      *
-     * @param \Bitrix\Main\Event $oEvent
+     * @param \Bitrix\Main\Event $event
      * @return void
      */
-    public static function onSaleOrderBeforeSaved(\Bitrix\Main\Event $oEvent)
+    public static function onSaleOrderBeforeSaved(\Bitrix\Main\Event $event)
     {
         $mdk = ClientFactory::build();
         $settings = $mdk->componentSettings();
         $automatic = $mdk->serviceAutomatic();
 
         /** @var \Bitrix\Sale\Order */
-        $order = $oEvent->getParameter("ENTITY");
+        $order = $event->getParameter("ENTITY");
+
+        // если заказ только создается (не имеет id) - пропускаем
+        if (!$order->getId()) {
+            return;
+        }
+
         $orderFields = $order->getFieldValues();
         $siteId = $order->getSiteId();
 
@@ -74,7 +80,7 @@ class Events
             }
         } catch (AutomaticException $e) {
         } catch (\Exception $e) {
-            $oEvent->addResult(
+            $event->addResult(
                 new EventResult(
                     EventResult::ERROR,
                     new ResultError(sprintf('Не удалось фискализировать заказ - %s', $e->getMessage())),
