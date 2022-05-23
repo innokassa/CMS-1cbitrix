@@ -30,7 +30,8 @@ class innokassa_fiscal extends CModule
 
     //########################################################################
 
-    public function doInstall()
+    // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+    public function DoInstall()
     {
         global $APPLICATION;
 
@@ -123,7 +124,8 @@ class innokassa_fiscal extends CModule
 
     //########################################################################
 
-    public function doUninstall()
+    // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+    public function DoUninstall()
     {
         $this->uninstallEvents();
         $this->uninstallAgents();
