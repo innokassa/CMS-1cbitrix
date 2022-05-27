@@ -103,6 +103,8 @@ class innokassa_fiscal extends CModule
             `site_id` VARCHAR(255) NOT NULL,
             `receipt_id` VARCHAR(64) NOT NULL,
             `status` TINYINT NOT NULL,
+            `accepted` TINYINT NOT NULL,
+            `available` TINYINT NOT NULL,
             `type` TINYINT NOT NULL,
             `items` TEXT NOT NULL,
             `taxation` TINYINT NOT NULL,

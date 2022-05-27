@@ -129,6 +129,71 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
         return $receipts;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function min(ReceiptFilter $filter, string $column)
+    {
+        $where = $this->where($filter);
+
+        $res = $this->db->Query(
+            sprintf(
+                'SELECT MIN(%s) FROM `%s` WHERE %s',
+                $column,
+                self::$table,
+                $where
+            ),
+            false,
+            sprintf('DB error (%s:%s)', __FILE__, __LINE__)
+        );
+
+        $result = $res->Fetch();
+        return current($result);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function max(ReceiptFilter $filter, string $column)
+    {
+        $where = $this->where($filter);
+
+        $res = $this->db->Query(
+            sprintf(
+                'SELECT MAX(%s) FROM `%s` WHERE %s',
+                $column,
+                self::$table,
+                $where
+            ),
+            false,
+            sprintf('DB error (%s:%s)', __FILE__, __LINE__)
+        );
+
+        $result = $res->Fetch();
+        return current($result);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count(ReceiptFilter $filter): int
+    {
+        $where = $this->where($filter);
+
+        $res = $this->db->Query(
+            sprintf(
+                'SELECT COUNT(*) FROM `%s` WHERE %s',
+                self::$table,
+                $where
+            ),
+            false,
+            sprintf('DB error (%s:%s)', __FILE__, __LINE__)
+        );
+
+        $result = $res->Fetch();
+        return current($result);
+    }
+
     //######################################################################
     // PRIVATE
     //######################################################################
@@ -161,5 +226,32 @@ class ReceiptStorageConcrete implements ReceiptStorageInterface
         }
 
         return $a;
+    }
+
+    private function where(ReceiptFilter $filter): string
+    {
+        $aWhere = $filter->toArray();
+        $aWhere2 = [];
+        foreach ($aWhere as $key => $value) {
+            $val = $value['value'];
+            if ($val === null) {
+                $val = 'null';
+            } elseif (is_array($val)) {
+                $val = '(' . implode(',', $val) . ')';
+
+                if ($value['op'] == '=') {
+                    $value['op'] = ' IN ';
+                } else {
+                    $value['op'] = ' NOT IN ';
+                }
+            } else {
+                $val = "'$val'";
+            }
+            $op = $value['op'];
+            $aWhere2[] = "{$key}{$op}$val";
+        }
+
+        $where = implode(' AND ', $aWhere2);
+        return $where;
     }
 }

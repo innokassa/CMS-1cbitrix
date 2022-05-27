@@ -22,6 +22,9 @@ class AgentFiscal
         $pipeline = $mdk->servicePipeline();
         $pipeline->update();
 
+        $fileMonitoring = $_SERVER['DOCUMENT_ROOT'] . '/innokassa.monitoring';
+        $pipeline->monitoring($fileMonitoring, 'start_time');
+
         return sprintf('%s::pipeline();', AgentFiscal::class);
     }
 }
