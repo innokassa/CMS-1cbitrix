@@ -20,7 +20,9 @@ class AgentFiscal
     {
         $mdk = ClientFactory::build();
         $pipeline = $mdk->servicePipeline();
-        $pipeline->update();
+
+        $fileUpdate = $_SERVER['DOCUMENT_ROOT'] . '/.innokassa.pipeline';
+        $pipeline->update($fileUpdate);
 
         $fileMonitoring = $_SERVER['DOCUMENT_ROOT'] . '/innokassa.monitoring';
         $pipeline->monitoring($fileMonitoring, 'start_time');
