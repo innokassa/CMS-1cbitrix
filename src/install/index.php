@@ -98,7 +98,6 @@ class innokassa_fiscal extends CModule
         $sql = "CREATE TABLE IF NOT EXISTS `$table` (
             `id` INT NOT NULL AUTO_INCREMENT,
             `subtype` TINYINT,
-            `cashbox` VARCHAR(255) NOT NULL,
             `order_id` VARCHAR(255) NOT NULL,
             `site_id` VARCHAR(255) NOT NULL,
             `receipt_id` VARCHAR(64) NOT NULL,

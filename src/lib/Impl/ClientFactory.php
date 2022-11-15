@@ -7,7 +7,6 @@ use Bitrix\Main\Config\Option;
 use Innokassa\MDK\Client;
 use Innokassa\MDK\Net\Transfer;
 use Innokassa\MDK\Net\ConverterApi;
-use Innokassa\MDK\Logger\LoggerFile;
 use Innokassa\MDK\Net\NetClientCurl;
 use Innokassa\MDK\Services\PipelineBase;
 use Innokassa\MDK\Services\AutomaticBase;
@@ -35,11 +34,9 @@ class ClientFactory
             new ConverterStorage($receiptIdFactory)
         );
         $receiptAdapter = new ReceiptAdapterConcrete($settings);
-        $logger = new LoggerFile();
         $transfer = new Transfer(
             new NetClientCurl(),
-            new ConverterApi(),
-            $logger
+            new ConverterApi()
         );
 
         $automatic = new AutomaticBase(
@@ -49,7 +46,7 @@ class ClientFactory
             $receiptAdapter,
             $receiptIdFactory
         );
-        $pipeline = new PipelineBase($settings, $receiptStorage, $transfer);
+        $pipeline = new PipelineBase($settings, $receiptStorage, $transfer, $receiptIdFactory);
         $connector = new ConnectorBase($transfer);
 
         $client = new Client(
@@ -57,8 +54,7 @@ class ClientFactory
             $receiptStorage,
             $automatic,
             $pipeline,
-            $connector,
-            $logger
+            $connector
         );
 
         return $client;
