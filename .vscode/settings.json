@@ -1,5 +1,5 @@
 {
-    "intelephense.environment.phpVersion": "7.4.0",
+    "intelephense.environment.phpVersion": "7.1.0",
     "phpcs.showSources": true,
     "phpcs.executablePath": "vendor/bin/phpcs",
     "phpcs.standard": "PSR12"
