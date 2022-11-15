@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+
+  db:
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: 1c-bitrix
+    ports:
+      - "53001:3306"
+    volumes:
+      - 1cb-module-db:/var/lib/mysql
+    networks:
+      - 1cb-module-network
+
+  backend:
+    build:
+      context: ./1cb-docker/php/
+    restart: unless-stopped
+    depends_on: 
+      - db
+    extra_hosts:
+      - "host.docker.internal:172.70.1.1"
+    volumes:
+      - ./src/:/var/www/html/bitrix/modules/innokassa.fiscal/
+      - 1cb-module-src:/var/www/html/
+      - ./logs/php:/var/log/php
+      - ./logs/1cb:/var/www/html/log/
+    command: /bin/bash -c "chown -R www-data:www-data /var/www/html/bitrix/ && php-fpm -F"
+    networks:
+      - 1cb-module-network
+
+  webserver:
+    build:
+      context: ./1cb-docker/apache2/
+    depends_on: 
+      - backend
+    volumes:
+      - 1cb-module-src:/var/www/html/
+      - ./logs/apache2:/var/log/apache2
+    networks:
+      1cb-module-network:
+        ipv4_address: 172.70.1.4
+
+networks:
+  1cb-module-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.70.1.1/24
+
+volumes:
+  1cb-module-db:
+  1cb-module-src:

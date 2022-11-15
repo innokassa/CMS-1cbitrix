@@ -1,3 +1,6 @@
 [submodule "src/mdk"]
 	path = src/mdk
 	url = https://git.innokassa.ru/Byurrer/mdk.git
+[submodule "1cb-docker"]
+	path = 1cb-docker
+	url = https://git.innokassa.ru/cms-modules/1cb-docker.git
