@@ -20,7 +20,7 @@ class AgentFiscal
     {
         $mdk = ClientFactory::build();
         $pipeline = $mdk->servicePipeline();
-        $pipeline->update();
+        $pipeline->update($_SERVER['DOCUMENT_ROOT'] . '/.pipeline');
 
         return sprintf('%s::pipeline();', AgentFiscal::class);
     }

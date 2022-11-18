@@ -14,7 +14,6 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\HttpApplication;
 use Innokassa\MDK\Net\Transfer;
 use Innokassa\MDK\Net\ConverterApi;
-use Innokassa\MDK\Logger\LoggerFile;
 use Innokassa\MDK\Net\NetClientCurl;
 use Innokassa\MDK\Entities\Atoms\Vat;
 use Innokassa\MDK\Services\ConnectorBase;
@@ -107,7 +106,9 @@ function RenderSettings($idModule, $aSettings, $sSiteId)
                 break;
             case "checkbox":
                 $inner = sprintf(
-                    '<input type="checkbox" id="%s" name="%s" value="%s" %s class="adm-designed-checkbox"><label class="adm-designed-checkbox-label" for="%s"  title=""></label>',
+                    '<input type="checkbox" id="%s" name="%s" value="%s" %s class="adm-designed-checkbox">
+                        <label class="adm-designed-checkbox-label" for="%s"  title="">
+                    </label>',
                     $name2,
                     $name2,
                     $realval,
@@ -120,7 +121,10 @@ function RenderSettings($idModule, $aSettings, $sSiteId)
         }
 
         $line = sprintf(
-            '<div style="display: block; margin-bottom: 5px;"><label style="display: inline-block;width:50%%;text-align: right;">%s</label>%s</div>',
+            '<div style="display: block; margin-bottom: 5px;">
+                <label style="display: inline-block;width:50%%;text-align: right;">%s</label>
+                %s
+            </div>',
             $desc,
             $inner
         );
@@ -310,15 +314,16 @@ if ($request->isPost() && check_bitrix_sessid()) {
                 }
 
                 $type = $aOption[3][0];
+                $name = $aOption[0];
 
                 if ($request["apply"]) {
                     if ($type == "checkbox") {
-                        $aOptions[$sSiteId][$aOption[0]] = $request->getPost($aOption[0] . '_' . $sSiteId) !== null ? "Y" : "N";
+                        $aOptions[$sSiteId][$name] = $request->getPost($name . '_' . $sSiteId) !== null ? "Y" : "N";
                     } else {
-                        $aOptions[$sSiteId][$aOption[0]] = trim($request->getPost($aOption[0] . '_' . $sSiteId));
+                        $aOptions[$sSiteId][$name] = trim($request->getPost($name . '_' . $sSiteId));
                     }
                 } elseif ($request["default"]) {
-                    $aOptions[$sSiteId][$aOption[0]] = trim($aOption[2]);
+                    $aOptions[$sSiteId][$name] = trim($aOption[2]);
                 }
             }
         }
@@ -334,8 +339,7 @@ if ($request->isPost() && check_bitrix_sessid()) {
         try {
             $transfer = new Transfer(
                 new NetClientCurl(),
-                new ConverterApi(),
-                new LoggerFile()
+                new ConverterApi()
             );
             $conn = new ConnectorBase($transfer);
             $conn->testSettings(new SettingsConcrete($aOptions), $sSiteId);
@@ -379,13 +383,18 @@ $subTabControl = new CAdminViewTabControl("subTabControl", $aSubTabs);
 $oTabControl = new CAdminTabControl("tabControl", $aTabs);
 $oTabControl->Begin();
 
-?><form action="<?php echo($APPLICATION->GetCurPage()); ?>?mid=<?php echo($idModule); ?>&lang=<?php echo(LANG); ?>" method="post">
+?><form action="<?php echo sprintf("%s?mid=%s&lang=%s", $APPLICATION->GetCurPage(), $idModule, LANG); ?>" method="post">
 <?php
 
 $oTabControl->BeginNextTab();
 foreach ($aSiteIds as $sSiteId => $sSiteName) {
     if (count($aSettingsError[$sSiteId]) > 0) {
-        echo "<div style='width: 100%; margin: 5px; padding: 5px; text-align: center; color: red; font-size: 18px;'>$sSiteId: " . implode("<br/>", $aSettingsError[$sSiteId]) . "</div><br/><br/>";
+        echo sprintf(
+            "<div %s>%s: %s</div><br/><br/>",
+            "style='width:100%;margin:5px;padding:5px;text-align:center;color:red;font-size:18px;'",
+            $sSiteId,
+            implode("<br/>", $aSettingsError[$sSiteId])
+        );
     }
 }
 
